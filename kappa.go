@@ -48,7 +48,7 @@ func main() {
 
 	var emojis emojiPack
 	if err != nil {
-		fmt.Printf("Unable to read YAML file")
+		fmt.Printf("Unable to read YAML file\n")
 		log.Fatal(err)
 	}
 
@@ -109,7 +109,7 @@ func bttv(client *http.Client, teamURL string, token string) {
 
 	err = json.Unmarshal(bttvBody, &bttvEmotes)
 	if err != nil {
-		fmt.Printf("Error unmarshalling JSON from BTTV")
+		fmt.Printf("Error unmarshalling JSON from BTTV\n")
 		log.Fatal(err)
 	}
 	// fmt.Println(bttvEmotes.Emotes)
@@ -163,6 +163,6 @@ func upload(client *http.Client, image []byte, name, teamURL, token string) {
 	body, _ := ioutil.ReadAll(resp.Body)
 	json.Unmarshal(body, &data)
 	if e, ok := data["error"]; ok {
-		fmt.Printf("error: %s", e)
+		fmt.Printf("error: %s\n", e)
 	}
 }
