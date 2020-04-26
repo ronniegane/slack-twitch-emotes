@@ -12,11 +12,8 @@ import (
 	"net/http/httputil"
 	"os"
 	"strings"
-	"syscall"
 
 	"gopkg.in/yaml.v3"
-
-	"golang.org/x/crypto/ssh/terminal"
 )
 
 // BTTV emote IDs are hexadecimal (so strings in JSON) while Twitch emote IDs are ints
@@ -36,27 +33,15 @@ type emoji struct {
 }
 
 func main() {
-	var team, email, password string
+	var team, token string
 	flag.StringVar(&team, "team", "", "your team or workspace name")
-	flag.StringVar(&email, "email", "", "the email address you use for this slack team")
-	flag.StringVar(&password, "password", "", "your password for this slack team")
+	flag.StringVar(&token, "token", "", "the user access token from the configuration page")
 	flag.Parse()
 
-	// Team and email address are required
-	if len(team) == 0 || len(email) == 0 {
-		fmt.Println("Team name and email address are required")
+	// Team and token are required
+	if len(team) == 0 || len(token) == 0 {
+		fmt.Println("Team name and access token are required")
 		os.Exit(1)
-	}
-
-	// If password is missing then ask for it
-	for len(password) == 0 {
-		fmt.Printf("Password for %s in %s: ", email, team)
-		bytePassword, err := terminal.ReadPassword(int(syscall.Stdin))
-		if err != nil {
-			fmt.Printf("Failed to read password: %v", err)
-		}
-		password = string(bytePassword)
-		fmt.Println()
 	}
 
 	// Read emotes from file
@@ -71,17 +56,7 @@ func main() {
 	err = yaml.Unmarshal(yamlFile, &emojis)
 
 	// Upload emotes to Slack workspace
-	// Fetch a session token for the API
-	// To do this we have to fmt into the customization page of our workspace
-
-	/*
-		when logging in through the web browser
-		seems to POST to root team domain with signin = 1, password, email in JSON
-		responds with a bunch of cookies
-	*/
-
 	teamURL := "https://" + team + ".slack.com"
-	http.Get(teamURL + "/customize/emoji")
 
 	/*
 	   If you successfully sign in to the Slack web page, then the /customize/emoji page content
@@ -89,8 +64,6 @@ func main() {
 	   We can successfully make an upload to /api/emoji.add if we have that token in the form data
 	*/
 
-	// hardcode token for now
-	token := ""
 	// We can't just give slack a URL to fetch images from, we have to download the file ourselves and then upload it to Slack
 	client := http.DefaultClient
 
