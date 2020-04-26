@@ -14,6 +14,8 @@ import (
 	"strings"
 	"syscall"
 
+	"gopkg.in/yaml.v3"
+
 	"golang.org/x/crypto/ssh/terminal"
 )
 
@@ -22,9 +24,15 @@ type bttvEmote struct {
 	ID   string `json:"id"`
 	Code string `json:"code"`
 }
-type twitchEmote struct {
-	ID   int    `json:"id"`
-	Code string `json:"code"`
+
+type emojiPack struct {
+	Title  string  `yaml:"title"`
+	Emojis []emoji `yaml:"emojis"`
+}
+
+type emoji struct {
+	Name string `yaml:"name"`
+	Src  string `yaml:"src"`
 }
 
 func main() {
@@ -53,34 +61,16 @@ func main() {
 
 	fmt.Printf("team: %q, email: %q, password: %q\n", team, email, password)
 
-	// Gather Twitch emotes
-	twitchEmotesURL := "https://twitchemotes.com/api_cache/v3/global.json"
-	twitchResp, err := http.Get(twitchEmotesURL)
+	// Read emotes from file
+	yamlFile, err := ioutil.ReadFile("test.yaml")
+
+	var emojis emojiPack
 	if err != nil {
-		fmt.Printf("Unable to fetch Twitch emotes list from %s\n", twitchEmotesURL)
-		log.Fatal(err)
-	}
-	twitchBody, err := ioutil.ReadAll(twitchResp.Body)
-	if err != nil {
-		fmt.Printf("Error reading response body from %s\n", twitchEmotesURL)
+		fmt.Printf("Unable to read YAML file")
 		log.Fatal(err)
 	}
 
-	// Twitch emotes get returned as a map where the emote names are the keys and also the "name" value
-	twitchEmotes := map[string]twitchEmote{}
-	err = json.Unmarshal(twitchBody, &twitchEmotes)
-	if err != nil {
-		fmt.Printf("Error unmarshalling JSON from Twitch")
-		log.Fatal(err)
-	}
-
-	// Transform this into a simple list of emote IDs and names
-	emotes := []twitchEmote{}
-	for _, v := range twitchEmotes {
-		emotes = append(emotes, v)
-	}
-	// fmt.Println(emotes)
-	fmt.Printf("There are %d Twitch emotes to upload\n", len(emotes))
+	err = yaml.Unmarshal(yamlFile, &emojis)
 
 	// Upload emotes to Slack workspace
 	// Fetch a session token for the API
@@ -106,25 +96,22 @@ func main() {
 	// We can't just give slack a URL to fetch images from, we have to download the file ourselves and then upload it to Slack
 	client := http.DefaultClient
 
-	// Twitch emotes are at https://static-cdn.jtvnw.net/emoticons/v1/{id}/1.0
-	for i, e := range emotes {
+	for i, e := range emojis.Emojis {
 		// just upload one image while testing
 		if i > 0 {
 			break
 		}
-		twitchFetchURL := fmt.Sprintf("https://static-cdn.jtvnw.net/emoticons/v1/%d/1.0", e.ID)
-		fmt.Println("Fetching from " + twitchFetchURL)
-		resp, err := http.Get(twitchFetchURL)
+		fmt.Println("Fetching from " + e.Src)
+		resp, err := http.Get(e.Src)
 		if err != nil {
-			fmt.Println("Error fetching image from " + twitchFetchURL)
+			fmt.Println("Error fetching image from " + e.Src)
 		} else {
 			image, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
-				fmt.Println("Error reading response body from " + twitchFetchURL)
+				fmt.Println("Error reading response body from " + e.Src)
 			} else {
-				upload(client, image, e.Code, teamURL, token)
+				upload(client, image, e.Name, teamURL, token)
 			}
-
 		}
 	}
 
