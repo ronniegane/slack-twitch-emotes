@@ -67,11 +67,7 @@ func main() {
 	// We can't just give slack a URL to fetch images from, we have to download the file ourselves and then upload it to Slack
 	client := http.DefaultClient
 
-	for i, e := range emojis.Emojis {
-		// just upload one image while testing
-		if i > 0 {
-			break
-		}
+	for _, e := range emojis.Emojis {
 		fmt.Println("Fetching from " + e.Src)
 		resp, err := http.Get(e.Src)
 		if err != nil {
@@ -118,11 +114,7 @@ func bttv(client *http.Client, teamURL string, token string) {
 	// BTTV emotes are found using the template URL which looks like "//cdn.betterttv.net/emote/{{id}}/{{image}}"
 	bttvEmotes.URLTemplate = "https:" + strings.Replace(strings.Replace(bttvEmotes.URLTemplate, "{{id}}", "%s", 1), "{{image}}", "1x", 1)
 
-	for i, e := range bttvEmotes.Emotes {
-		// just upload one image while testing
-		if i > 0 {
-			break
-		}
+	for _, e := range bttvEmotes.Emotes {
 		BTTVfetchURL := fmt.Sprintf(bttvEmotes.URLTemplate, e.ID)
 		fmt.Println("Fetching from " + BTTVfetchURL)
 		resp, err := http.Get(BTTVfetchURL)
