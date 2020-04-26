@@ -32,9 +32,10 @@ type emoji struct {
 }
 
 func main() {
-	var team, token string
+	var team, token, fileName string
 	flag.StringVar(&team, "team", "", "your team or workspace name")
 	flag.StringVar(&token, "token", "", "the user access token from the configuration page")
+	flag.StringVar(&fileName, "file", "test.yaml", "emoji YAML file to upload")
 	flag.Parse()
 
 	// Team and token are required
@@ -44,11 +45,11 @@ func main() {
 	}
 
 	// Read emotes from file
-	yamlFile, err := ioutil.ReadFile("test.yaml")
+	yamlFile, err := ioutil.ReadFile(fileName)
 
 	var emojis emojiPack
 	if err != nil {
-		fmt.Printf("Unable to read YAML file\n")
+		fmt.Printf("Unable to read YAML file %s\n", fileName)
 		log.Fatal(err)
 	}
 
