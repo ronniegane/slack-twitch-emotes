@@ -84,6 +84,11 @@ func main() {
 
 }
 
+func fetchToken(team, email, password string) string {
+	// TODO: get the user token from the workspace customisation page
+	return ""
+}
+
 func bttv(client *http.Client, teamURL string, token string) {
 	// Fetch and upload the BTTV emotes
 	// BTTV emotes are in a structure closer to our desired list of emotes
