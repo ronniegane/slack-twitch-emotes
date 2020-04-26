@@ -59,8 +59,6 @@ func main() {
 		fmt.Println()
 	}
 
-	fmt.Printf("team: %q, email: %q, password: %q\n", team, email, password)
-
 	// Read emotes from file
 	yamlFile, err := ioutil.ReadFile("test.yaml")
 
@@ -202,10 +200,4 @@ func upload(client *http.Client, image []byte, name, teamURL, token string) {
 	if e, ok := data["error"]; ok {
 		fmt.Printf("error: %s", e)
 	}
-
-	// Viewing dump of response
-	fmt.Println()
-	respDump, _ := httputil.DumpResponse(resp, true)
-	dumpStr := string(respDump)
-	fmt.Println(dumpStr)
 }
