@@ -9,7 +9,6 @@ import (
 	"log"
 	"mime/multipart"
 	"net/http"
-	"net/http/httputil"
 	"os"
 	"strings"
 
@@ -152,10 +151,6 @@ func upload(client *http.Client, image []byte, name, teamURL, token string) {
 	mpw.Close()
 	req, _ := http.NewRequest("POST", teamURL+"/api/emoji.add", &buf)
 	req.Header.Set("Content-Type", mpw.FormDataContentType())
-
-	// viewing dump of request
-	dump, _ := httputil.DumpRequestOut(req, true)
-	fmt.Println(string(dump))
 
 	resp, err := client.Do(req)
 	if err != nil {
