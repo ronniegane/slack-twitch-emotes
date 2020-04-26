@@ -29,11 +29,9 @@ type twitchEmote struct {
 
 func main() {
 	var team, email, password string
-	var skipBttv bool
 	flag.StringVar(&team, "team", "", "your team or workspace name")
 	flag.StringVar(&email, "email", "", "the email address you use for this slack team")
 	flag.StringVar(&password, "password", "", "your password for this slack team")
-	flag.BoolVar(&skipBttv, "skip-bttv", false, "skip BTTV emotes and only get Twitch ones")
 	flag.Parse()
 
 	// Team and email address are required
@@ -84,33 +82,6 @@ func main() {
 	// fmt.Println(emotes)
 	fmt.Printf("There are %d Twitch emotes to upload\n", len(emotes))
 
-	// Gather BTTV emotes if requested
-	// BTTV emotes are in a structure closer to our desired list of emotes
-	bttvEmotes := struct {
-		URLTemplate string      `json:"urlTemplate"` // has emote ID and {{image}} (size eg 1x)
-		Emotes      []bttvEmote `json:"emotes"`
-	}{}
-	if !skipBttv {
-		bttvEmotesURL := "https://api.betterttv.net/2/emotes"
-		bttvResp, err := http.Get(bttvEmotesURL)
-		if err != nil {
-			log.Fatalf("Unable to fetch BTTV emotes list from %s\n", bttvEmotesURL)
-		}
-		bttvBody, err := ioutil.ReadAll(bttvResp.Body)
-		if err != nil {
-			fmt.Printf("Error reading response body from %s\n", bttvEmotesURL)
-			log.Fatal(err)
-		}
-
-		err = json.Unmarshal(bttvBody, &bttvEmotes)
-		if err != nil {
-			fmt.Printf("Error unmarshalling JSON from BTTV")
-			log.Fatal(err)
-		}
-		// fmt.Println(bttvEmotes.Emotes)
-		fmt.Printf("There are %d BTTV emotes to upload\n", len(bttvEmotes.Emotes))
-	}
-
 	// Upload emotes to Slack workspace
 	// Fetch a session token for the API
 	// To do this we have to fmt into the customization page of our workspace
@@ -155,29 +126,56 @@ func main() {
 			}
 
 		}
-
 	}
+
+}
+
+func bttv(client *http.Client, teamURL string, token string) {
+	// Fetch and upload the BTTV emotes
+	// BTTV emotes are in a structure closer to our desired list of emotes
+	bttvEmotes := struct {
+		URLTemplate string      `json:"urlTemplate"` // has emote ID and {{image}} (size eg 1x)
+		Emotes      []bttvEmote `json:"emotes"`
+	}{}
+
+	bttvEmotesURL := "https://api.betterttv.net/2/emotes"
+	bttvResp, err := http.Get(bttvEmotesURL)
+	if err != nil {
+		log.Fatalf("Unable to fetch BTTV emotes list from %s\n", bttvEmotesURL)
+	}
+	bttvBody, err := ioutil.ReadAll(bttvResp.Body)
+	if err != nil {
+		fmt.Printf("Error reading response body from %s\n", bttvEmotesURL)
+		log.Fatal(err)
+	}
+
+	err = json.Unmarshal(bttvBody, &bttvEmotes)
+	if err != nil {
+		fmt.Printf("Error unmarshalling JSON from BTTV")
+		log.Fatal(err)
+	}
+	// fmt.Println(bttvEmotes.Emotes)
+	fmt.Printf("There are %d BTTV emotes to upload\n", len(bttvEmotes.Emotes))
 
 	// BTTV emotes are found using the template URL which looks like "//cdn.betterttv.net/emote/{{id}}/{{image}}"
 	bttvEmotes.URLTemplate = "https:" + strings.Replace(strings.Replace(bttvEmotes.URLTemplate, "{{id}}", "%s", 1), "{{image}}", "1x", 1)
-	if !skipBttv {
-		for i, e := range bttvEmotes.Emotes {
-			// just upload one image while testing
-			if i > 0 {
-				break
-			}
-			BTTVfetchURL := fmt.Sprintf(bttvEmotes.URLTemplate, e.ID)
-			fmt.Println("Fetching from " + BTTVfetchURL)
-			resp, err := http.Get(BTTVfetchURL)
+
+	for i, e := range bttvEmotes.Emotes {
+		// just upload one image while testing
+		if i > 0 {
+			break
+		}
+		BTTVfetchURL := fmt.Sprintf(bttvEmotes.URLTemplate, e.ID)
+		fmt.Println("Fetching from " + BTTVfetchURL)
+		resp, err := http.Get(BTTVfetchURL)
+		if err != nil {
+			fmt.Println("Error fetching image from " + BTTVfetchURL)
+		} else {
+			image, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
-				fmt.Println("Error fetching image from " + BTTVfetchURL)
+				fmt.Println("Error reading response body from " + BTTVfetchURL)
 			} else {
-				image, err := ioutil.ReadAll(resp.Body)
-				if err != nil {
-					fmt.Println("Error reading response body from " + BTTVfetchURL)
-				} else {
-					upload(client, image, e.Code, teamURL, token)
-				}
+				upload(client, image, e.Code, teamURL, token)
 			}
 		}
 	}
