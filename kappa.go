@@ -127,6 +127,12 @@ func bttvFetch(client *http.Client, teamURL string, token string) []emoji {
 	return bttvList
 }
 
+func writeOutYaml(title string, emojis []emoji) {
+	pack := emojiPack{Title: title, Emojis: emojis}
+	bytes, _ := yaml.Marshal(pack)
+	ioutil.WriteFile(title+".yaml", bytes, 0644)
+}
+
 func upload(client *http.Client, image []byte, name, teamURL, token string) {
 	// Using MultiPart Writer to make a multipart form data POST request
 	var buf bytes.Buffer
