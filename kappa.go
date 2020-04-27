@@ -35,7 +35,7 @@ func main() {
 	var team, token, fileName string
 	flag.StringVar(&team, "team", "", "your team or workspace name")
 	flag.StringVar(&token, "token", "", "the user access token from the configuration page")
-	flag.StringVar(&fileName, "file", "test.yaml", "emoji YAML file to upload")
+	flag.StringVar(&fileName, "file", "twitch.yaml", "emoji YAML file to upload")
 	flag.Parse()
 
 	// Team and token are required
