@@ -113,7 +113,7 @@ func bttvFetch(client *http.Client, teamURL string, token string) []emoji {
 		fmt.Printf("Error unmarshalling JSON from BTTV\n")
 		log.Fatal(err)
 	}
-	// fmt.Println(bttvEmotes.Emotes)
+
 	fmt.Printf("There are %d BTTV emotes to upload\n", len(bttvEmotes.Emotes))
 
 	// BTTV emotes are found using the template URL which looks like "//cdn.betterttv.net/emote/{{id}}/{{image}}"
