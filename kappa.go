@@ -68,7 +68,7 @@ func main() {
 	client := http.DefaultClient
 
 	for _, e := range emojis.Emojis {
-		fmt.Println("Fetching from " + e.Src)
+		fmt.Printf("Fetching %s from %s\n", e.Name, e.Src)
 		resp, err := http.Get(e.Src)
 		if err != nil {
 			fmt.Println("Error fetching image from " + e.Src)
