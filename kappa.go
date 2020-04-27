@@ -89,8 +89,8 @@ func fetchToken(team, email, password string) string {
 	return ""
 }
 
-func bttv(client *http.Client, teamURL string, token string) {
-	// Fetch and upload the BTTV emotes
+func bttvFetch(client *http.Client, teamURL string, token string) []emoji {
+	// Fetch the BTTV emotes
 	// BTTV emotes are in a structure closer to our desired list of emotes
 	bttvEmotes := struct {
 		URLTemplate string      `json:"urlTemplate"` // has emote ID and {{image}} (size eg 1x)
@@ -118,22 +118,13 @@ func bttv(client *http.Client, teamURL string, token string) {
 
 	// BTTV emotes are found using the template URL which looks like "//cdn.betterttv.net/emote/{{id}}/{{image}}"
 	bttvEmotes.URLTemplate = "https:" + strings.Replace(strings.Replace(bttvEmotes.URLTemplate, "{{id}}", "%s", 1), "{{image}}", "1x", 1)
+	var bttvList []emoji
 
 	for _, e := range bttvEmotes.Emotes {
 		BTTVfetchURL := fmt.Sprintf(bttvEmotes.URLTemplate, e.ID)
-		fmt.Println("Fetching from " + BTTVfetchURL)
-		resp, err := http.Get(BTTVfetchURL)
-		if err != nil {
-			fmt.Println("Error fetching image from " + BTTVfetchURL)
-		} else {
-			image, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				fmt.Println("Error reading response body from " + BTTVfetchURL)
-			} else {
-				upload(client, image, e.Code, teamURL, token)
-			}
-		}
+		bttvList = append(bttvList, emoji{Name: e.Code, Src: BTTVfetchURL})
 	}
+	return bttvList
 }
 
 func upload(client *http.Client, image []byte, name, teamURL, token string) {
