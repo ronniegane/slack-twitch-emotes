@@ -6,10 +6,28 @@ Largely inspired by the Ruby app [caldrealabs/kappa-slack](https://github.com/ca
 
 Use of the Slack API inspired by [smashwilson/slack-mojinator](https://github.com/smashwilson/slack-emojinator) and [jackellenberger/emojme](https://github.com/jackellenberger/emojme).
 
-Makes use of the unofficial, public [Twitch Emotes API](https://twitchemotes.com/apidocs) version 3 for Twitch emotes. This is marked as deprecated but there is no v4 equivalent request to get _all_ global emotes without iterating through them one by one.
-
 Uses the undocumented BetterTTV API for BTTV emotes.
 
 ## Installation
+Requires the yaml library: `go get gopkg.in/yaml.v3`
+
+## File format
+A list of emotes to upload are expected in the [lambtron/emojipacks](https://github.com/lambtron/emojipacks) style:
+```yaml
+title: Twitch
+emojis:
+  - name: babyrage
+    src: https://static-cdn.jtvnw.net/emoticons/v1/22639/3.0
+  - name: biblethump
+    src: https://static-cdn.jtvnw.net/emoticons/v1/86/3.0
+```
 
 ## Usage
+1. Fetch your token:
+    1. open your workspace's customisation page in a browser
+    2. open up JS console
+    3. run `window.prompt("your api token is: ", TS.boot_data.api_token)` and copy the value (should look like `xoxs...`)
+2. Run with `go run kappa.go` with the following flags:
+    - `team` : the name of your team, eg "abc" if your slack workspace is "abc.slack.com"
+    - `token` : the token from step 1
+    - `file` : a YAML file containing emotes to upload, formatted as above
