@@ -117,7 +117,7 @@ func bttvFetch(client *http.Client, teamURL string, token string) []emoji {
 	fmt.Printf("There are %d BTTV emotes to upload\n", len(bttvEmotes.Emotes))
 
 	// BTTV emotes are found using the template URL which looks like "//cdn.betterttv.net/emote/{{id}}/{{image}}"
-	bttvEmotes.URLTemplate = "https:" + strings.Replace(strings.Replace(bttvEmotes.URLTemplate, "{{id}}", "%s", 1), "{{image}}", "1x", 1)
+	bttvEmotes.URLTemplate = "https:" + strings.Replace(strings.Replace(bttvEmotes.URLTemplate, "{{id}}", "%s", 1), "{{image}}", "2x", 1)
 	var bttvList []emoji
 
 	for _, e := range bttvEmotes.Emotes {
